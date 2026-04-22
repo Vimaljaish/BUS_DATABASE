@@ -1,0 +1,198 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class BusBookingConsole {
+
+    static final String DB_URL = "jdbc:mysql://localhost:3306/bus_booking";
+    static final String USER = "root";
+    static final String PASS = "dbms";
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS)) {
+
+            while (true) {
+
+                System.out.println("\n===== BUS BOOKING SYSTEM =====");
+                System.out.println("1. View Buses");
+                System.out.println("2. Add Bus");
+                System.out.println("3. View Passengers");
+                System.out.println("4. Add Passenger");
+                System.out.println("5. View Bookings");
+                System.out.println("6. Add Booking");
+                System.out.println("7. Delete Booking");
+                System.out.println("8. Exit");
+
+                System.out.print("Enter choice: ");
+                int ch = sc.nextInt();
+
+                switch (ch) {
+
+                    case 1:
+                        viewBuses(conn);
+                        break;
+
+                    case 2:
+                        addBus(conn, sc);
+                        break;
+
+                    case 3:
+                        viewPassengers(conn);
+                        break;
+
+                    case 4:
+                        addPassenger(conn, sc);
+                        break;
+
+                    case 5:
+                        viewBookings(conn);
+                        break;
+
+                    case 6:
+                        addBooking(conn, sc);
+                        break;
+
+                    case 7:
+                        deleteBooking(conn, sc);
+                        break;
+
+                    case 8:
+                        System.out.println("Exiting...");
+                        return;
+
+                    default:
+                        System.out.println("Invalid choice!");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= BUS =================
+    static void viewBuses(Connection conn) throws SQLException {
+        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM bus");
+
+        System.out.println("\n--- BUS LIST ---");
+        while (rs.next()) {
+            System.out.println(
+                    rs.getString(1) + " | " +
+                    rs.getString(2) + " | " +
+                    rs.getString(3) + " | " +
+                    rs.getString(4) + " | Seats: " +
+                    rs.getInt(5)
+            );
+        }
+    }
+
+    static void addBus(Connection conn, Scanner sc) throws SQLException {
+        System.out.print("Bus ID: ");
+        String id = sc.next();
+        System.out.print("Name: ");
+        String name = sc.next();
+        System.out.print("Source: ");
+        String src = sc.next();
+        System.out.print("Destination: ");
+        String dest = sc.next();
+        System.out.print("Seats: ");
+        int seats = sc.nextInt();
+
+        PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO bus VALUES (?, ?, ?, ?, ?)");
+        ps.setString(1, id);
+        ps.setString(2, name);
+        ps.setString(3, src);
+        ps.setString(4, dest);
+        ps.setInt(5, seats);
+
+        ps.executeUpdate();
+        System.out.println("Bus Added!");
+    }
+
+    // ================= PASSENGER =================
+    static void viewPassengers(Connection conn) throws SQLException {
+        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM passenger");
+
+        System.out.println("\n--- PASSENGERS ---");
+        while (rs.next()) {
+            System.out.println(
+                    rs.getString(1) + " | " +
+                    rs.getString(2) + " | Age: " +
+                    rs.getInt(3) + " | " +
+                    rs.getString(4)
+            );
+        }
+    }
+
+    static void addPassenger(Connection conn, Scanner sc) throws SQLException {
+        System.out.print("Passenger ID: ");
+        String id = sc.next();
+        System.out.print("Name: ");
+        String name = sc.next();
+        System.out.print("Age: ");
+        int age = sc.nextInt();
+        System.out.print("Gender: ");
+        String gender = sc.next();
+
+        PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO passenger VALUES (?, ?, ?, ?)");
+        ps.setString(1, id);
+        ps.setString(2, name);
+        ps.setInt(3, age);
+        ps.setString(4, gender);
+
+        ps.executeUpdate();
+        System.out.println("Passenger Added!");
+    }
+
+    // ================= BOOKING =================
+    static void viewBookings(Connection conn) throws SQLException {
+        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM booking");
+
+        System.out.println("\n--- BOOKINGS ---");
+        while (rs.next()) {
+            System.out.println(
+                    rs.getString(1) + " | Bus: " +
+                    rs.getString(2) + " | Passenger: " +
+                    rs.getString(3) + " | Date: " +
+                    rs.getDate(4)
+            );
+        }
+    }
+
+    static void addBooking(Connection conn, Scanner sc) throws SQLException {
+        System.out.print("Booking ID: ");
+        String bid = sc.next();
+        System.out.print("Bus ID: ");
+        String bus = sc.next();
+        System.out.print("Passenger ID: ");
+        String pass = sc.next();
+        System.out.print("Date (YYYY-MM-DD): ");
+        String date = sc.next();
+
+        PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO booking VALUES (?, ?, ?, ?)");
+        ps.setString(1, bid);
+        ps.setString(2, bus);
+        ps.setString(3, pass);
+        ps.setString(4, date);
+
+        ps.executeUpdate();
+        System.out.println("Booking Added!");
+    }
+
+    static void deleteBooking(Connection conn, Scanner sc) throws SQLException {
+        System.out.print("Enter Booking ID: ");
+        String id = sc.next();
+
+        PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM booking WHERE booking_id=?");
+        ps.setString(1, id);
+
+        ps.executeUpdate();
+        System.out.println("Booking Deleted!");
+    }
+}
